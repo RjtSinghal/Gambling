@@ -6,7 +6,7 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 
-contract GamblingGame is VRFConsumerBaseV2Plus {
+contract Gambling is VRFConsumerBaseV2Plus {
     event Deposit(address depositer, uint256 amount);
     event RequestedRandomWinner(uint256 requestId);
     event WinnerAnnounced(uint256 requestId, address winner, uint256 winningAmount);
