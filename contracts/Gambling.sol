@@ -5,8 +5,9 @@ import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFCo
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract Gambling is VRFConsumerBaseV2Plus {
+contract Gambling is VRFConsumerBaseV2Plus, ReentrancyGuard {
     event Deposit(address depositer, uint256 amount);
     event RequestedRandomWinner(uint256 requestId);
     event WinnerAnnounced(uint256 requestId, address winner, uint256 winningAmount);
@@ -56,7 +57,7 @@ contract Gambling is VRFConsumerBaseV2Plus {
      * in the pot.
      * param: _amount
      */
-    function deposit(uint256 _amount) external {
+    function deposit(uint256 _amount) external nonReentrant {
         if (depositersCount == MAX_DEPOSITORS_COUNT && tokenDeposited[msg.sender] == false) {
             generateWinner();
         } else {
@@ -83,7 +84,7 @@ contract Gambling is VRFConsumerBaseV2Plus {
      * This Function also uses Chainlink VRF Randomness to generate a requestID to Chainlink SUbscription
      * and internally calls fulfillRandomWords function.
      */
-    function generateWinner() public returns (uint256 requestId) {
+    function generateWinner() public nonReentrant returns (uint256 requestId) {
         require(generateWinnerInProgress == false, "Winner Selection uner progress.");
         require(depositersCount == MAX_DEPOSITORS_COUNT, "Total depositers should be 10 to generate a winner.");
 
@@ -120,7 +121,7 @@ contract Gambling is VRFConsumerBaseV2Plus {
      * This function implements ClaimReward functionality where the winner will be able to claim
      * its rewards.
      */
-    function claimReward() external {
+    function claimReward() external nonReentrant {
         // Using CEI design pattern to prevent re-entrancy attack
         uint256 amount = winningAmount[msg.sender];
         require(amount > 0, "No amount to claim.");
